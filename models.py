@@ -1,3 +1,8 @@
+"""
+Models for a weblog application.
+
+"""
+
 import datetime, re
 from django.conf import settings
 from django.db import models
@@ -17,7 +22,7 @@ ENTRY_STATUS_CHOICES = (
 
 class Category(models.Model):
     """
-    A category that an entry belongs to.
+    A category that an Entry can belong to.
     
     """
     name = models.CharField(maxlength=250)
@@ -40,15 +45,16 @@ class Category(models.Model):
 
 class EntryManager(models.Manager):
     """
-    Custom manager for the Entry model, providing shortcuts for filtering
-    by entry status.
+    Custom manager for the Entry model, providing shortcuts for
+    filtering by entry status.
     
     """
     def live(self):
         """
-        Returns a QuerySet of Entries with "live" (published) status.
+        Returns a QuerySet of Entries with "live" (published) status. 
         
-        Useful for public views and especially for passing to generic views.
+        Useful for public views and especially for passing to generic
+        views.
         
         """
         return self.filter(status__exact=1)
@@ -57,17 +63,20 @@ class EntryManager(models.Manager):
         """
         Returns a QuerySet of Entries with "draft" (unpublished) status.
         
-        Useful if you ever want to roll your own admin views for blog entries.
+        Useful if you ever want to roll your own admin views for blog
+        entries.
         
         """
         return self.filter(status__exact=2)
     
     def most_commented(self, num=5, free=True):
         """
-        Returns the ``num`` Entries with the highest comment counts, in order.
+        Returns the ``num`` Entries with the highest comment counts,
+        in order.
         
-        Pass ``free=False`` if you're using the registered comment model (Comment)
-        instead of the anonymous comment model (FreeComment).
+        Pass ``free=False`` if you're using the registered comment
+        model (Comment) instead of the anonymous comment model
+        (FreeComment).
         
         """
         from django.db import connection
@@ -167,8 +176,8 @@ class Entry(models.Model):
     
     def comments_open(self):
         """
-        Used to determine whether an entry is old enough that new comments on it
-        should await approval before becoming public.
+        Used to determine whether an entry is old enough that new
+        comments on it should await approval before becoming public.
         
         """
         return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
@@ -198,9 +207,9 @@ class Link(models.Model):
     """
     A link posted to the weblog.
     
-    Denormalized in the same fashion as the Entry model, in
-    order to allow text-to-HTML conversion to be performed on
-    the ``description`` field.
+    Denormalized in the same fashion as the Entry model, in order to
+    allow text-to-HTML conversion to be performed on the
+    ``description`` field.
     
     """
     # Metadata.
@@ -254,8 +263,8 @@ class Link(models.Model):
     
     def comments_open(self):
         """
-        Used to determine whether an entry is old enough that new comments on it
-        should await approval before becoming public.
+        Used to determine whether an entry is old enough that new
+        comments on it should await approval before becoming public.
         
         """
         return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date

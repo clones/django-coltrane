@@ -45,28 +45,30 @@ dispatcher.connect(moderate_comments, sender=FreeComment, signal=signals.pre_sav
 
 def apply_markup_filter(text):
     """
-    Applies a text-to-HTML conversion function to a piece of text and returns
-    the generated HTML.
+    Applies a text-to-HTML conversion function to a piece of text and
+    returns the generated HTML.
     
-    The function to use is derived from the value of the setting ``MARKUP_FILTER``,
-    which should be a 2-tuple:
+    The function to use is derived from the value of the setting
+    ``MARKUP_FILTER``, which should be a 2-tuple:
     
-        * The first element should be the name of a markup filter -- e.g.,
-          "markdown" -- to apply. If no markup filter is desired, set this to
-          None.
+        * The first element should be the name of a markup filter --
+          e.g.,"markdown" -- to apply. If no markup filter is desired,
+          set this to None.
     
-        * The second element should be a dictionary of keyword arguments which will be
-          passed to the markup function. If no extra arguments are desired, set this
-          to an empty dictionary; some arguments may still be inferred as needed,
+        * The second element should be a dictionary of keyword
+          arguments which will be passed to the markup function. If no
+          extra arguments are desired, set this to an empty
+          dictionary; some arguments may still be inferred as needed,
           however.
     
-    So, for example, to use Markdown with safe mode turned on (safe mode removes raw
-    HTML), put this in your settings file::
+    So, for example, to use Markdown with safe mode turned on (safe
+    mode removes raw HTML), put this in your settings file::
     
         MARKUP_FILTER = ('markdown', { 'safe_mode': True })
     
-    Currently supports Textile, Markdown and reStructuredText, using names identical
-    to the template filters found in ``django.contrib.markup``.
+    Currently supports Textile, Markdown and reStructuredText, using
+    names identical to the template filters found in
+    ``django.contrib.markup``.
     
     """
     markup_func_name = settings.MARKUP_FILTER[0]
@@ -76,8 +78,7 @@ def apply_markup_filter(text):
         return text
     
     if markup_func_name not in ('textile', 'markdown', 'restructuredtext'):
-        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; \
-                          acceptable values are 'textile', 'markdown', 'restructuredtext' and None" % markup_func_name)
+        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; acceptable values are 'textile', 'markdown', 'restructuredtext' and None" % markup_func_name)
     
     if markup_func_name == 'textile':
         import textile
