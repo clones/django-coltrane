@@ -94,10 +94,9 @@ def apply_markup_filter(text):
     
     elif markup_func_name == 'restructuredtext':
         from docutils import core
-        markup_func = core.publish_parts
         if 'settings_overrides' not in markup_kwargs:
             markup_kwargs.update(settings_overrides=getattr(settings, "RESTRUCTUREDTEXT_FILTER_SETTINGS", {}))
         if 'writer_name' not in markup_kwargs:
             markup_kwargs.update(writer_name='html4css1')
-        parts = publish_parts(source=text, **markup_kwargs)
+        parts = core.publish_parts(source=text, **markup_kwargs)
         return parts['fragment']
