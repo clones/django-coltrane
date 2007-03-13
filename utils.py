@@ -3,7 +3,7 @@ from django.db.models import signals
 from django.dispatch import dispatcher
 from django.contrib.comments.models import Comment, FreeComment
 from django.contrib.sites.models import Site
-from akismet import Akismet
+
 
 def moderate_comments(sender, instance):
     """
@@ -30,6 +30,7 @@ def moderate_comments(sender, instance):
         if callable(comments_open) and not comments_open():
             instance.is_public = False
         elif hasattar(settings, 'AKISMET_API_KEY') and settings.AKISMET_API_KEY:
+            from akismet import Akismet
             akismet_api = Akismet(key=settings.AKISMET_API_KEY,
                                   blog_url='http://%s/' % Site.objects.get_current().domain)
             if akismet_api.verify_key():

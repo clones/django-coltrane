@@ -9,7 +9,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from tagging.models import Tag
-import pydelicious
 import utils
 
 
@@ -247,6 +246,7 @@ class Link(models.Model):
     
     def save(self):
         if not self.id and self.post_elsewhere:
+            import pydelicious
             try:
                 pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, self.url, self.title, self.tag_list)
             except:
