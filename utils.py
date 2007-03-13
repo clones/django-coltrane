@@ -82,9 +82,9 @@ def apply_markup_filter(text):
     
     if markup_func_name == 'textile':
         import textile
-        if not 'encoding' in markup_kwargs:
+        if 'encoding' not in markup_kwargs:
             markup_kwargs.update(encoding=settings.DEFAULT_CHARSET)
-        if not 'output' in markup_kwargs:
+        if 'output' not in markup_kwargs:
             markup_kwargs.update(output=settings.DEFAULT_CHARSET)
         return textile.textile(text, **markup_kwargs)
     
@@ -95,9 +95,9 @@ def apply_markup_filter(text):
     elif markup_func_name == 'restructuredtext':
         from docutils import core
         markup_func = core.publish_parts
-        if not 'settings_overrides' in markup_kwargs:
+        if 'settings_overrides' not in markup_kwargs:
             markup_kwargs.update(settings_overrides=getattr(settings, "RESTRUCTUREDTEXT_FILTER_SETTINGS", {}))
-        if not 'writer_name' in markup_kwargs:
+        if 'writer_name' not in markup_kwargs:
             markup_kwargs.update(writer_name='html4css1')
         parts = publish_parts(source=text, **markup_kwargs)
         return parts['fragment']
