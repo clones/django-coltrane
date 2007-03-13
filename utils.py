@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.signals import pre_save
+from django.db.models import signals
 from django.dispatch import dispatcher
 from django.contrib.comments.models import Comment, FreeComment
 from django.contrib.sites.models import Site
@@ -40,8 +40,8 @@ def moderate_comments(sender, instance):
                 if akismet_api.comment_check(instance.comment, data=akismet_data, build_data=True):
                     instance.is_public = False
 
-dispatcher.connect(moderate_comments, sender=Comment, signal=pre_save)
-dispatcher.connect(moderate_comments, sender=FreeComment, signal=pre_save)
+dispatcher.connect(moderate_comments, sender=Comment, signal=signals.pre_save)
+dispatcher.connect(moderate_comments, sender=FreeComment, signal=signals.pre_save)
 
 def apply_markup_filter(text):
     """
