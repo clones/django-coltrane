@@ -29,7 +29,7 @@ def moderate_comments(sender, instance):
         comments_open = getattr(content_object, 'comments_open', None)
         if callable(comments_open) and not comments_open():
             instance.is_public = False
-        elif hasattar(settings, 'AKISMET_API_KEY') and settings.AKISMET_API_KEY:
+        elif hasattr(settings, 'AKISMET_API_KEY') and settings.AKISMET_API_KEY:
             from akismet import Akismet
             akismet_api = Akismet(key=settings.AKISMET_API_KEY,
                                   blog_url='http://%s/' % Site.objects.get_current().domain)

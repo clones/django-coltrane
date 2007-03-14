@@ -39,7 +39,7 @@ class Category(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return "/blog/categories/%s/" % self.slug
+        return "/weblog/categories/%s/" % self.slug
 
 
 class EntryManager(models.Manager):
@@ -171,7 +171,7 @@ class Entry(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return "/blog/%s/%s/" % (self.pub_date.strftime("%Y/%b/%d").lower(), self.slug)
+        return "/weblog/%s/%s/" % (self.pub_date.strftime("%Y/%b/%d").lower(), self.slug)
     
     def comments_open(self):
         """
@@ -179,7 +179,7 @@ class Entry(models.Model):
         comments on it should await approval before becoming public.
         
         """
-        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
+        return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
     
     def _get_tags(self):
         """
@@ -259,7 +259,7 @@ class Link(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return "/blog/links/%s/%s/" % (self.pub_date.strftime("%Y/%b/%d").lower(), self.slug)
+        return "/weblog/links/%s/%s/" % (self.pub_date.strftime("%Y/%b/%d").lower(), self.slug)
     
     def comments_open(self):
         """
@@ -267,7 +267,7 @@ class Link(models.Model):
         comments on it should await approval before becoming public.
         
         """
-        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
+        return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
     
     def _get_tags(self):
         """
