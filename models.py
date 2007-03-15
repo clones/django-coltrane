@@ -7,7 +7,6 @@ import datetime, re
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from tagging.models import Tag
 import utils
 
@@ -80,6 +79,7 @@ class EntryManager(models.Manager):
         """
         from django.db import connection
         from django.contrib.comments import models as comment_models
+        from django.contrib.contenttypes.models import ContentType
         if free:
             comment_opts = comment_models.FreeComment._meta
         else:
@@ -98,7 +98,7 @@ class EntryManager(models.Manager):
         
         # Use ``in_bulk`` here instead of an ``id__in`` filter, because ``id__in``
         # would clobber the ordering.
-        entry_dict = self.in_bulk(object_ids)
+        entry_dict = self.in_bulk(entry_ids)
         return [entry_dict[entry_id] for entry_id in entry_ids]
 
 
