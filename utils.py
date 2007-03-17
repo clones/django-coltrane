@@ -76,16 +76,15 @@ def apply_markup_filter(text):
     Django's 'linebreaks' filter and leaves all other text unchanged.
     
     """
-    markup_func_name = settings.MARKUP_FILTER[0]
-    markup_kwargs = settings.MARKUP_FILTER[1]    
+    markup_func, markup_kwargs = settings.MARKUP_FILTER
     
-    if markup_func_name is None: # No processing is needed.
+    if markup_func is None: # No processing is needed.
         return text
     
-    if markup_func_name not in ('textile', 'markdown', 'restructuredtext', 'linebreaks'):
-        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; acceptable values are 'textile', 'markdown', 'restructuredtext', 'linebreaks', and None" % markup_func_name)
+    if markup_func not in ('textile', 'markdown', 'restructuredtext', 'linebreaks'):
+        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; acceptable values are 'textile', 'markdown', 'restructuredtext', 'linebreaks', and None" % markup_func)
     
-    if markup_func_name == 'textile':
+    if markup_func == 'textile':
         import textile
         if 'encoding' not in markup_kwargs:
             markup_kwargs.update(encoding=settings.DEFAULT_CHARSET)
@@ -93,11 +92,11 @@ def apply_markup_filter(text):
             markup_kwargs.update(output=settings.DEFAULT_CHARSET)
         return textile.textile(text, **markup_kwargs)
     
-    elif markup_func_name == 'markdown':
+    elif markup_func == 'markdown':
         import markdown
         return markdown.markdown(text, **markup_kwargs)
     
-    elif markup_func_name == 'restructuredtext':
+    elif markup_func == 'restructuredtext':
         from docutils import core
         if 'settings_overrides' not in markup_kwargs:
             markup_kwargs.update(settings_overrides=getattr(settings, "RESTRUCTUREDTEXT_FILTER_SETTINGS", {}))
@@ -106,6 +105,6 @@ def apply_markup_filter(text):
         parts = core.publish_parts(source=text, **markup_kwargs)
         return parts['fragment']
     
-    elif markup_func_name == 'linebreaks':
+    elif markup_func == 'linebreaks':
         from django.utils.html import linebreaks
         return linebreaks(text)
