@@ -5,7 +5,6 @@ Convenience functions for use with the weblog.
 from django.conf import settings
 from django.db.models import signals
 from django.dispatch import dispatcher
-from django.contrib.comments.models import Comment, FreeComment
 from django.contrib.sites.models import Site
 
 
