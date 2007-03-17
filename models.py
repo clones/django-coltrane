@@ -140,6 +140,7 @@ class Entry(models.Model):
     class Meta:
         get_latest_by = 'pub_date'
         ordering = ['-pub_date']
+        unique_together = (('slug', 'pub_date'),)
         verbose_name_plural = 'Entries'
     
     class Admin:
@@ -232,6 +233,7 @@ class Link(models.Model):
     
     class Meta:
         ordering = ['-pub_date']
+        unique_together = (('slug', 'pub_date'),)
     
     class Admin:
         date_hierarchy = 'pub_date'
