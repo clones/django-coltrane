@@ -7,7 +7,6 @@ from django.db.models import signals
 from django.dispatch import dispatcher
 from django.contrib.sites.models import Site
 
-
 def moderate_comments(sender, instance):
     """
     Applies comment moderation to newly-posted comments.
@@ -16,7 +15,7 @@ def moderate_comments(sender, instance):
     
         1. If the object the comment is being posted on has a method
            named ``comments_open``, it will be called; if the return
-           value evaluates to ``False, the comment's ``is_public``
+           value evaluates to ``False``, the comment's ``is_public``
            field will be set to ``False`` and no further processing
            will be done.
     
