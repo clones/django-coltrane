@@ -24,8 +24,9 @@ class Category(models.Model):
     
     """
     name = models.CharField(maxlength=250)
-    slug = models.SlugField(prepopulate_from=('name',))
-    description = models.TextField()
+    slug = models.SlugField(prepopulate_from=('name',), unique=True,
+                            help_text='Used in the URL for the category. Must be unique.')
+    description = models.TextField(help_text='A short description of the category, to be used in list pages.')
     
     class Meta:
         verbose_name_plural = 'Categories'
@@ -121,9 +122,11 @@ class Entry(models.Model):
     author = models.ForeignKey(User)
     enable_comments = models.BooleanField(default=True)
     pub_date = models.DateTimeField('Date posted', default=datetime.datetime.today)
-    slug = models.SlugField(prepopulate_from=('title',))
+    slug = models.SlugField(prepopulate_from=('title',),
+                            help_text='Used in the URL of the entry. Must be unique for the publication date of the entry.')
     title = models.CharField(maxlength=250)
-    status = models.IntegerField(choices=ENTRY_STATUS_CHOICES, default=1)
+    status = models.IntegerField(choices=ENTRY_STATUS_CHOICES, default=1,
+                                 help_text='Only entries with "live" status will be displayed publicly.')
     
     # The actual entry bits.
     body = models.TextField()
@@ -133,7 +136,8 @@ class Entry(models.Model):
     
     # Categorization.
     categories = models.ManyToManyField(Category, filter_interface=models.HORIZONTAL, blank=True)
-    tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True)
+    tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True,
+                                help_text='Separate tag names with spaces; use hyphens for multi-word tags.')
     
     objects = EntryManager()
     
@@ -151,7 +155,7 @@ class Entry(models.Model):
             ('Entry', { 'fields':
                         ('excerpt', 'body') }),
             ('Categorization', { 'fields':
-                                 ('categories', 'tag_list') }),
+                                 ('tag_list', 'categories') }),
             )
         list_display = ('title', 'pub_date', 'enable_comments')
         list_filter = ('status',)
@@ -215,15 +219,17 @@ class Link(models.Model):
     # Metadata.
     enable_comments = models.BooleanField(default=True)
     post_elsewhere = models.BooleanField('Post to del.icio.us',
-                                         default=settings.DEFAULT_EXTERNAL_LINK_POST)
+                                         default=settings.DEFAULT_EXTERNAL_LINK_POST,
+                                         help_text='If checked, this link will be posted both to your weblog and to your del.icio.us account.')
     posted_by = models.ForeignKey(User)
     pub_date = models.DateTimeField(default=datetime.datetime.today)
     title = models.CharField(maxlength=250)
-    slug = models.SlugField(prepopulate_from=('title',))
+    slug = models.SlugField(prepopulate_from=('title',),
+                            help_text='Must be unique for the publication date.')
     
     # The actual link bits.
-    description = models.TextField()
-    description_html = models.TextField(editable=False)
+    description = models.TextField(blank=True, null=True)
+    description_html = models.TextField(editable=False, blank=True, null=True)
     via_name = models.CharField('Via', maxlength=250, blank=True, null=True,
                                 help_text='The name of the person whose site you spotted the link on. Optional.')
     via_url = models.URLField('Via URL', verify_exists=False, blank=True, null=True,
@@ -241,7 +247,7 @@ class Link(models.Model):
             ('Metadata', { 'fields':
                            ('title', 'slug', 'pub_date', 'posted_by', 'enable_comments', 'post_elsewhere') }),
             ('Link', { 'fields':
-                      ('url', 'description', 'via_name', 'via_url', 'tag_list') }),
+                      ('url', 'description', 'tag_list', 'via_name', 'via_url') }),
             )
         list_display = ('title', 'enable_comments')
         search_fields = ('title', 'description')
@@ -253,7 +259,8 @@ class Link(models.Model):
                 pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, self.url, self.title, self.tag_list)
             except:
                 pass # TODO: don't just silently quash a bad del.icio.us post
-        self.description_html = utils.apply_markup_filter(self.description)
+        if self.description:
+            self.description_html = utils.apply_markup_filter(self.description)
         super(Link, self).save()
         self.tags = self.tag_list
     
