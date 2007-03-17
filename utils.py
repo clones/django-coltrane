@@ -1,3 +1,7 @@
+"""
+Convenience functions for use with the weblog.
+
+"""
 from django.conf import settings
 from django.db.models import signals
 from django.dispatch import dispatcher
@@ -69,7 +73,8 @@ def apply_markup_filter(text):
     
     Currently supports Textile, Markdown and reStructuredText, using
     names identical to the template filters found in
-    ``django.contrib.markup``.
+    ``django.contrib.markup``, and 'linebreaks', which simply applies
+    Django's 'linebreaks' filter and leaves all other text unchanged.
     
     """
     markup_func_name = settings.MARKUP_FILTER[0]
@@ -78,8 +83,8 @@ def apply_markup_filter(text):
     if markup_func_name is None: # No processing is needed.
         return text
     
-    if markup_func_name not in ('textile', 'markdown', 'restructuredtext'):
-        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; acceptable values are 'textile', 'markdown', 'restructuredtext' and None" % markup_func_name)
+    if markup_func_name not in ('textile', 'markdown', 'restructuredtext', 'linebreaks'):
+        raise ValueError("'%s' is not a valid value for the first element of MARKUP_FILTER; acceptable values are 'textile', 'markdown', 'restructuredtext', 'linebreaks', and None" % markup_func_name)
     
     if markup_func_name == 'textile':
         import textile
@@ -101,3 +106,7 @@ def apply_markup_filter(text):
             markup_kwargs.update(writer_name='html4css1')
         parts = core.publish_parts(source=text, **markup_kwargs)
         return parts['fragment']
+    
+    elif markup_func_name == 'linebreaks':
+        from django.utils.html import linebreaks
+        return linebreaks(text)
