@@ -70,6 +70,10 @@ def apply_markup_filter(text):
     
         MARKUP_FILTER = ('markdown', { 'safe_mode': True })
     
+    Or, to use no filtering at all::
+    
+        MARKUP_FILTER = (None, {})
+    
     Currently supports Textile, Markdown and reStructuredText, using
     names identical to the template filters found in
     ``django.contrib.markup``, and 'linebreaks', which simply applies
