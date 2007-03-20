@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from tagging.models import Tag
-import utils
+from coltrane import utils
 
 
 ENTRY_STATUS_CHOICES = (
