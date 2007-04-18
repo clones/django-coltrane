@@ -3,19 +3,13 @@ Models for a weblog application.
 
 """
 
-import datetime, re
+import datetime
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from tagging.models import Tag
-from coltrane import utils
-
-
-ENTRY_STATUS_CHOICES = (
-    (1, 'Live'),
-    (2, 'Draft'),
-    (3, 'Hidden'),
-    )
+from template_utils.markup import formatter
+from coltrane import managers, utils
 
 
 class Category(models.Model):
@@ -42,67 +36,6 @@ class Category(models.Model):
         return "/weblog/categories/%s/" % self.slug
 
 
-class EntryManager(models.Manager):
-    """
-    Custom manager for the Entry model, providing shortcuts for
-    filtering by entry status.
-    
-    """
-    def live(self):
-        """
-        Returns a QuerySet of Entries with "live" (published) status. 
-        
-        Useful for public views and especially for passing to generic
-        views.
-        
-        """
-        return self.filter(status__exact=1)
-    
-    def drafts(self):
-        """
-        Returns a QuerySet of Entries with "draft" (unpublished) status.
-        
-        Useful if you ever want to roll your own admin views for blog
-        entries.
-        
-        """
-        return self.filter(status__exact=2)
-    
-    def most_commented(self, num=5, free=True):
-        """
-        Returns the ``num`` Entries with the highest comment counts,
-        in order.
-        
-        Pass ``free=False`` if you're using the registered comment
-        model (Comment) instead of the anonymous comment model
-        (FreeComment).
-        
-        """
-        from django.db import connection
-        from django.contrib.comments import models as comment_models
-        from django.contrib.contenttypes.models import ContentType
-        if free:
-            comment_opts = comment_models.FreeComment._meta
-        else:
-            comment_opts = comment_models.Comment._meta
-        ctype = ContentType.objects.get_for_model(self.model)
-        query = """SELECT object_id, COUNT(*) AS score
-        FROM %s
-        WHERE content_type_id = %%s
-        AND is_public = 1
-        GROUP BY object_id
-        ORDER BY score DESC""" % comment_opts.db_table
-        
-        cursor = connection.cursor()
-        cursor.execute(query, [ctype.id])
-        entry_ids = [row[0] for row in cursor.fetchall()[:num]]
-        
-        # Use ``in_bulk`` here instead of an ``id__in`` filter, because ``id__in``
-        # would clobber the ordering.
-        entry_dict = self.in_bulk(entry_ids)
-        return [entry_dict[entry_id] for entry_id in entry_ids]
-
-
 class Entry(models.Model):
     """
     An entry in the weblog.
@@ -118,15 +51,22 @@ class Entry(models.Model):
     grouped at all.
     
     """
-    # Metadata
+    STATUS_CHOICES = (
+        (1, 'Live'),
+        (2, 'Draft'),
+        (3, 'Hidden'),
+        )
+    
+    # Metadata.
     author = models.ForeignKey(User)
     enable_comments = models.BooleanField(default=True)
+    featured = models.BooleanField(default=False)
     pub_date = models.DateTimeField('Date posted', default=datetime.datetime.today)
     slug = models.SlugField(prepopulate_from=('title',),
                             help_text='Used in the URL of the entry. Must be unique for the publication date of the entry.')
-    title = models.CharField(maxlength=250)
-    status = models.IntegerField(choices=ENTRY_STATUS_CHOICES, default=1,
+    status = models.IntegerField(choices=STATUS_CHOICES, default=1,
                                  help_text='Only entries with "live" status will be displayed publicly.')
+    title = models.CharField(maxlength=250)
     
     # The actual entry bits.
     body = models.TextField()
@@ -139,7 +79,8 @@ class Entry(models.Model):
     tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True,
                                 help_text='Separate tag names with spaces; use hyphens for multi-word tags.')
     
-    objects = EntryManager()
+    objects = models.Manager()
+    live = managers.LiveEntryManager()
     
     class Meta:
         get_latest_by = 'pub_date'
@@ -164,8 +105,8 @@ class Entry(models.Model):
     def save(self):
         # Run markup filter before save.
         if self.excerpt:
-            self.excerpt_html = utils.apply_markup_filter(self.excerpt)
-        self.body_html = utils.apply_markup_filter(self.body)
+            self.excerpt_html = formatter(self.excerpt)
+        self.body_html = formatter(self.body)
         super(Entry, self).save()
         
         # Update tags after saving, because we want to make sure
@@ -260,7 +201,7 @@ class Link(models.Model):
             except:
                 pass # TODO: don't just silently quash a bad del.icio.us post
         if self.description:
-            self.description_html = utils.apply_markup_filter(self.description)
+            self.description_html = formatter(self.description)
         super(Link, self).save()
         self.tags = self.tag_list
     

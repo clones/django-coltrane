@@ -7,8 +7,8 @@ work out a couple of needed parameters.
 """
 from django.shortcuts import get_object_or_404
 from django.views.generic import list_detail
-from models import Category, Entry
 from tagging.models import Tag, TaggedItem
+from coltrane.models import Category, Entry
 
 def category_detail(request, slug):
     """

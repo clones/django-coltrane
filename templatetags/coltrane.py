@@ -16,6 +16,7 @@ class LatestContentNode(template.Node):
         context[self.varname] = self.queryset[:self.num]
         return ''
 
+
 def do_latest_entries(parser, token):
     """
     Inserts the latest ``num`` published entries (i.e., those with
