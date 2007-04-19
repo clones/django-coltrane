@@ -35,6 +35,17 @@ class Category(models.Model):
     def get_absolute_url(self):
         return ('coltrane.views.list_detail.category_detail', (), { 'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
+    
+    def _get_live_entries(self):
+        """
+        Returns Entries in this Category with status of"live".
+        
+        Access this through the property ``live_entry_set``.
+        
+        """
+        return self.entry_set.filter(status__exact=1)
+    
+    live_entry_set = property(_get_live_entries)
 
 
 class Entry(models.Model):
@@ -93,7 +104,7 @@ class Entry(models.Model):
         date_hierarchy = 'pub_date'
         fields = (
             ('Metadata', { 'fields':
-                           ('title', 'slug', 'pub_date', 'author', 'status', 'enable_comments') }),
+                           ('title', 'slug', 'pub_date', 'author', 'status', 'featured', 'enable_comments') }),
             ('Entry', { 'fields':
                         ('excerpt', 'body') }),
             ('Categorization', { 'fields':
@@ -152,6 +163,30 @@ class Entry(models.Model):
     
     tags = property(_get_tags, _set_tags)
 
+    def get_next(self):
+        """
+        Returns the next Entry with "live" status by ``pub_date``, if
+        there is one, or ``None`` if there isn't.
+        
+        In public-facing views and templates, use this method instead
+        of ``get_next_by_pub_date``, because ``get_next_by_pub_date``
+        cannot differentiate live Entries.
+        
+        """
+        return self.get_next_by_pub_date(status__exact=1)
+
+    def get_previous(self):
+        """
+        Returns the previous Entry with "live" status by ``pub_date``,
+        if there is one, or ``None`` if there isn't.
+        
+        In public-facing views and templates, use this method instead
+        of ``get_previous_by_pub_date``, because
+        ``get_previous_by_pub_date`` cannot differentiate live Entries.
+        
+        """
+        return self.get_previous_by_pub_date(status__exact=1)
+
 
 class Link(models.Model):
     """
@@ -169,9 +204,9 @@ class Link(models.Model):
                                          help_text='If checked, this link will be posted both to your weblog and to your del.icio.us account.')
     posted_by = models.ForeignKey(User)
     pub_date = models.DateTimeField(default=datetime.datetime.today)
-    title = models.CharField(maxlength=250)
     slug = models.SlugField(prepopulate_from=('title',),
                             help_text='Must be unique for the publication date.')
+    title = models.CharField(maxlength=250)
     
     # The actual link bits.
     description = models.TextField(blank=True, null=True)
