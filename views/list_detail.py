@@ -5,7 +5,7 @@ from django.views.generic import date_based, list_detail
 from tagging.models import Tag
 from coltrane.models import Category, Entry, Link
 
-paginate_by = (hasattar(settings, PAGINATE_BY) and settings.PAGINATE_BY) or 20
+paginate_by = (hasattr(settings, 'PAGINATE_BY') and settings.PAGINATE_BY) or 20
 
 def category_detail(request, slug):
     """

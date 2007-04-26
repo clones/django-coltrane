@@ -33,7 +33,7 @@ class Category(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return ('coltrane.views.list_detail.category_detail', (), { 'slug': self.slug })
+        return ('coltrane_category_detail', (), { 'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
     
     def _get_live_entries(self):
@@ -75,6 +75,7 @@ class Entry(models.Model):
     featured = models.BooleanField(default=False)
     pub_date = models.DateTimeField('Date posted', default=datetime.datetime.today)
     slug = models.SlugField(prepopulate_from=('title',),
+                            unique_for_date='pub_date',
                             help_text='Used in the URL of the entry. Must be unique for the publication date of the entry.')
     status = models.IntegerField(choices=STATUS_CHOICES, default=1,
                                  help_text='Only entries with "live" status will be displayed publicly.')
@@ -129,10 +130,10 @@ class Entry(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return ('coltrane.views.list_detail.entry_detail', (), { 'year': self.pub_date.strftime('%Y'),
-                                                                 'month': self.pub_date.strftime('%b').lower(),
-                                                                 'day': self.pub_date.strftime('%d'),
-                                                                 'slug': self.slug })
+        return ('coltrane_entry_detail', (), { 'year': self.pub_date.strftime('%Y'),
+                                               'month': self.pub_date.strftime('%b').lower(),
+                                               'day': self.pub_date.strftime('%d'),
+                                               'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
     
     def comments_open(self):
@@ -205,6 +206,7 @@ class Link(models.Model):
     posted_by = models.ForeignKey(User)
     pub_date = models.DateTimeField(default=datetime.datetime.today)
     slug = models.SlugField(prepopulate_from=('title',),
+                            unique_for_date='pub_date',
                             help_text='Must be unique for the publication date.')
     title = models.CharField(maxlength=250)
     
@@ -217,6 +219,8 @@ class Link(models.Model):
                               help_text='The URL of the site where you spotted the link. Optional.')
     tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True)
     url = models.URLField('URL', unique=True, verify_exists=False)
+    
+    objects = managers.LinksManager()
     
     class Meta:
         ordering = ['-pub_date']
@@ -249,7 +253,7 @@ class Link(models.Model):
         return self.title
     
     def get_absolute_url(self):
-        return ('coltrane.views.list_detail.link_detail', (), { 'year': self.pub_date.strftime('%Y'),
+        return ('coltrane_link_detail', (), { 'year': self.pub_date.strftime('%Y'),
                                                                 'month': self.pub_date.strftime('%b').lower(),
                                                                 'day': self.pub_date.strftime('%d'),
                                                                 'slug': self.slug })
