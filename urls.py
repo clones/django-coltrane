@@ -10,8 +10,8 @@ root URLConf to include this URLConf for any URL beginning with
 from django.conf.urls.defaults import *
 from django.views.generic import date_based, list_detail
 from django.contrib.syndication.views import feed
+from coltrane import views
 from coltrane.models import Category, Entry, Link
-from coltrane.views import list_detail as coltrane_list_detail
 
 entry_info_dict = {
     'queryset': Entry.live,
@@ -70,6 +70,6 @@ urlpatterns += patterns('',
                            { 'queryset': Category.objects.all() },
                            name='coltrane_category_list'),
                        url(r'^categories/(?P<slug>[-\w]+)/$',
-                           coltrane_list_detail.category_detail,
+                           views.category_detail,
                            name='coltrane_category_detail'),
                         )
