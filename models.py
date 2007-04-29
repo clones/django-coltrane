@@ -188,6 +188,19 @@ class Entry(models.Model):
         """
         return self.get_previous_by_pub_date(status__exact=1)
 
+    def get_related_by_category(self):
+        """
+        Returns a QuerySet of Entries with categorization similar to
+        this one.
+        
+        """
+        category_ids = [o['id'] for o in self.categories.values('id')]
+        # TODO: This is a bit simplistic; it's probably worth
+        # building up a custom query which weights according
+        # to the number of shared categories, unless that's
+        # really hard or really nasty for the DB.
+        return Entry.live.exclude(pk=self.id).filter(categories__id__in=category_ids)
+
 
 class Link(models.Model):
     """

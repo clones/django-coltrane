@@ -69,19 +69,6 @@ class LiveEntryManager(models.Manager):
         except IndexError:
             return None
 
-    def related_by_category(self, entry):
-        """
-        Given an Entry, returns a QuerySet of Entries with similar
-        categorization.
-        
-        """
-        category_ids = [o['id'] for i in entry.categories.values('id')]
-        # TODO: This is a bit simplistic; it's probably worth
-        # building up a custom query which weights according
-        # to the number of shared categories, unless that's
-        # really hard or really nasty for the DB.
-        return self.filter(categories__id__in=category_ids)
-        
     most_commented = most_commented
 
 
