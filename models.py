@@ -7,7 +7,7 @@ import datetime
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
-from tagging.models import Tag
+from tagging.fields import TagField
 from template_utils.markup import formatter
 from coltrane import managers, utils
 
@@ -38,7 +38,7 @@ class Category(models.Model):
     
     def _get_live_entries(self):
         """
-        Returns Entries in this Category with status of"live".
+        Returns Entries in this Category with status of "live".
         
         Access this through the property ``live_entry_set``.
         
@@ -89,8 +89,7 @@ class Entry(models.Model):
     
     # Categorization.
     categories = models.ManyToManyField(Category, filter_interface=models.HORIZONTAL, blank=True)
-    tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True,
-                                help_text='Separate tag names with spaces; use hyphens for multi-word tags.')
+    tags = TagField()
     
     objects = models.Manager()
     live = managers.LiveEntryManager()
@@ -109,7 +108,7 @@ class Entry(models.Model):
             ('Entry', { 'fields':
                         ('excerpt', 'body') }),
             ('Categorization', { 'fields':
-                                 ('tag_list', 'categories') }),
+                                 ('tags', 'categories') }),
             )
         list_display = ('title', 'pub_date', 'enable_comments')
         list_filter = ('status',)
@@ -121,10 +120,6 @@ class Entry(models.Model):
             self.excerpt_html = formatter(self.excerpt)
         self.body_html = formatter(self.body)
         super(Entry, self).save()
-        
-        # Update tags after saving, because we want to make sure
-        # the Entry has an id for setting up relations.
-        self.tags = self.tag_list
         
     def __str__(self):
         return self.title
@@ -144,26 +139,6 @@ class Entry(models.Model):
         """
         return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
     
-    def _get_tags(self):
-        """
-        Returns the set of Tag objects for this Entry.
-        
-        Access this via the ``tags`` property.
-        
-        """
-        return Tag.objects.get_for_object(self)
-    
-    def _set_tags(self, tag_list):
-        """
-        Sets the Tag objects for this Entry.
-        
-        Access this via the ``tags`` property.
-        
-        """
-        Tag.objects.update_tags(self, tag_list)
-    
-    tags = property(_get_tags, _set_tags)
-
     def get_next(self):
         """
         Returns the next Entry with "live" status by ``pub_date``, if
@@ -230,7 +205,7 @@ class Link(models.Model):
                                 help_text='The name of the person whose site you spotted the link on. Optional.')
     via_url = models.URLField('Via URL', verify_exists=False, blank=True, null=True,
                               help_text='The URL of the site where you spotted the link. Optional.')
-    tag_list = models.CharField('Tags', maxlength=250, blank=True, null=True)
+    tags = TagField()
     url = models.URLField('URL', unique=True, verify_exists=False)
     
     objects = managers.LinksManager()
@@ -245,7 +220,7 @@ class Link(models.Model):
             ('Metadata', { 'fields':
                            ('title', 'slug', 'pub_date', 'posted_by', 'enable_comments', 'post_elsewhere') }),
             ('Link', { 'fields':
-                      ('url', 'description', 'tag_list', 'via_name', 'via_url') }),
+                      ('url', 'description', 'tags', 'via_name', 'via_url') }),
             )
         list_display = ('title', 'enable_comments')
         search_fields = ('title', 'description')
@@ -260,7 +235,6 @@ class Link(models.Model):
         if self.description:
             self.description_html = formatter(self.description)
         super(Link, self).save()
-        self.tags = self.tag_list
     
     def __str__(self):
         return self.title
@@ -279,23 +253,3 @@ class Link(models.Model):
         
         """
         return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
-    
-    def _get_tags(self):
-        """
-        Returns the set of Tag objects for this Link.
-        
-        Access this via the ``tags`` property.
-        
-        """
-        return Tag.objects.get_for_object(self)
-    
-    def _set_tags(self, tag_list):
-        """
-        Sets the Tag objects for this Link.
-        
-        Access this via the ``tags`` property.
-        
-        """
-        Tag.objects.update_tags(self, tag_list)
-    
-    tags = property(_get_tags, _set_tags)
