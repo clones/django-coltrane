@@ -4,11 +4,14 @@ Models for a weblog application.
 """
 
 import datetime
+
 from django.conf import settings
 from django.db import models
+
 from django.contrib.auth.models import User
 from tagging.fields import TagField
 from template_utils.markup import formatter
+
 from coltrane import managers, utils
 
 
@@ -21,6 +24,7 @@ class Category(models.Model):
     slug = models.SlugField(prepopulate_from=('name',), unique=True,
                             help_text='Used in the URL for the category. Must be unique.')
     description = models.TextField(help_text='A short description of the category, to be used in list pages.')
+    description_html = models.TextField(editable=False, blank=True)
     
     class Meta:
         verbose_name_plural = 'Categories'
@@ -31,6 +35,10 @@ class Category(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def save(self):
+        self.description_html = formatter(self.description)
+        super(Category, self).save()
     
     def get_absolute_url(self):
         return ('coltrane_category_detail', (), { 'slug': self.slug })
@@ -83,7 +91,7 @@ class Entry(models.Model):
     
     # The actual entry bits.
     body = models.TextField()
-    body_html = models.TextField(editable=False)
+    body_html = models.TextField(editable=False, blank=True)
     excerpt = models.TextField(blank=True, null=True)
     excerpt_html = models.TextField(blank=True, null=True, editable=False)
     
@@ -95,9 +103,9 @@ class Entry(models.Model):
     live = managers.LiveEntryManager()
     
     class Meta:
+        date_hierarcy = 'pub_date'
         get_latest_by = 'pub_date'
         ordering = ['-pub_date']
-        unique_together = (('slug', 'pub_date'),)
         verbose_name_plural = 'Entries'
     
     class Admin:
@@ -114,16 +122,16 @@ class Entry(models.Model):
         list_filter = ('status',)
         search_fields = ('excerpt', 'body', 'title')
     
+    def __str__(self):
+        return self.title
+    
+    
     def save(self):
-        # Run markup filter before save.
         if self.excerpt:
             self.excerpt_html = formatter(self.excerpt)
         self.body_html = formatter(self.body)
         super(Entry, self).save()
         
-    def __str__(self):
-        return self.title
-    
     def get_absolute_url(self):
         return ('coltrane_entry_detail', (), { 'year': self.pub_date.strftime('%Y'),
                                                'month': self.pub_date.strftime('%b').lower(),
@@ -163,19 +171,6 @@ class Entry(models.Model):
         """
         return self.get_previous_by_pub_date(status__exact=1)
 
-    def get_related_by_category(self):
-        """
-        Returns a QuerySet of Entries with categorization similar to
-        this one.
-        
-        """
-        category_ids = [o['id'] for o in self.categories.values('id')]
-        # TODO: This is a bit simplistic; it's probably worth
-        # building up a custom query which weights according
-        # to the number of shared categories, unless that's
-        # really hard or really nasty for the DB.
-        return Entry.live.exclude(pk=self.id).filter(categories__id__in=category_ids)
-
 
 class Link(models.Model):
     """
@@ -211,8 +206,9 @@ class Link(models.Model):
     objects = managers.LinksManager()
     
     class Meta:
+        date_hierarchy = 'pub_date'
+        get_latest_by = 'pub_date'
         ordering = ['-pub_date']
-        unique_together = (('slug', 'pub_date'),)
     
     class Admin:
         date_hierarchy = 'pub_date'
@@ -225,6 +221,9 @@ class Link(models.Model):
         list_display = ('title', 'enable_comments')
         search_fields = ('title', 'description')
     
+    def __str__(self):
+        return self.title
+    
     def save(self):
         if not self.id and self.post_elsewhere:
             import pydelicious
@@ -235,9 +234,6 @@ class Link(models.Model):
         if self.description:
             self.description_html = formatter(self.description)
         super(Link, self).save()
-    
-    def __str__(self):
-        return self.title
     
     def get_absolute_url(self):
         return ('coltrane_link_detail', (), { 'year': self.pub_date.strftime('%Y'),
