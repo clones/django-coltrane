@@ -5,6 +5,7 @@ Models for a weblog application.
 
 import datetime
 
+from comment_utils.managers import CommentedObjectManager
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -203,7 +204,7 @@ class Link(models.Model):
     tags = TagField()
     url = models.URLField('URL', unique=True, verify_exists=False)
     
-    objects = managers.LinksManager()
+    objects = CommentedObjectsManager()
     
     class Meta:
         date_hierarchy = 'pub_date'
