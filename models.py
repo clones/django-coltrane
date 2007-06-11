@@ -138,14 +138,9 @@ class Entry(models.Model):
                                                'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
     
-    def comments_open(self):
-        """
-        Used to determine whether an entry is old enough that new
-        comments on it should await approval before becoming public.
-        
-        """
-        return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
-    
+    def _next_previous_helper(self, direction):
+        return getattr(self, 'get_%s_by_pub_date' % direction)(status__exact=1)
+
     def get_next(self):
         """
         Returns the next Entry with "live" status by ``pub_date``, if
@@ -156,7 +151,7 @@ class Entry(models.Model):
         cannot differentiate live Entries.
         
         """
-        return self.get_next_by_pub_date(status__exact=1)
+        return self._next_previous_helper('next')
 
     def get_previous(self):
         """
@@ -168,7 +163,13 @@ class Entry(models.Model):
         ``get_previous_by_pub_date`` cannot differentiate live Entries.
         
         """
-        return self.get_previous_by_pub_date(status__exact=1)
+        return self._next_previous_helper('previous')
+
+    def allow_comments(self):
+        return self.enable_comments
+
+    def moderate_comments(self):
+        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
 
 
 class Link(models.Model):
@@ -241,10 +242,8 @@ class Link(models.Model):
                                                                 'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
     
-    def comments_open(self):
-        """
-        Used to determine whether an entry is old enough that new
-        comments on it should await approval before becoming public.
-        
-        """
-        return self.enable_comments and datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
+    def allow_comments(self):
+        return self.enable_comments
+
+    def moderate_comments(self):
+        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
