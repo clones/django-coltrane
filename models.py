@@ -3,16 +3,18 @@ Models for a weblog application.
 
 """
 
+
 import datetime
 
 from comment_utils.managers import CommentedObjectManager
+from comment_utils import moderation
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from tagging.fields import TagField
 from template_utils.markup import formatter
 
-from coltrane import managers, utils
+from coltrane import managers
 
 
 class Category(models.Model):
@@ -20,21 +22,21 @@ class Category(models.Model):
     A category that an Entry can belong to.
     
     """
-    name = models.CharField(maxlength=250)
-    slug = models.SlugField(prepopulate_from=('name',), unique=True,
+    title = models.CharField(maxlength=250)
+    slug = models.SlugField(prepopulate_from=('title',), unique=True,
                             help_text='Used in the URL for the category. Must be unique.')
     description = models.TextField(help_text='A short description of the category, to be used in list pages.')
     description_html = models.TextField(editable=False, blank=True)
     
     class Meta:
         verbose_name_plural = 'Categories'
-        ordering = ['name']
+        ordering = ['title']
     
     class Admin:
         pass
     
     def __str__(self):
-        return self.name
+        return self.title
     
     def save(self):
         self.description_html = formatter(self.description)
@@ -141,7 +143,7 @@ class Entry(models.Model):
     
     def _next_previous_helper(self, direction):
         return getattr(self, 'get_%s_by_pub_date' % direction)(status__exact=1)
-
+    
     def get_next(self):
         """
         Returns the next Entry with "live" status by ``pub_date``, if
@@ -153,7 +155,7 @@ class Entry(models.Model):
         
         """
         return self._next_previous_helper('next')
-
+    
     def get_previous(self):
         """
         Returns the previous Entry with "live" status by ``pub_date``,
@@ -165,12 +167,6 @@ class Entry(models.Model):
         
         """
         return self._next_previous_helper('previous')
-
-    def allow_comments(self):
-        return self.enable_comments
-
-    def moderate_comments(self):
-        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
 
 
 class Link(models.Model):
@@ -229,7 +225,7 @@ class Link(models.Model):
         if not self.id and self.post_elsewhere:
             import pydelicious
             try:
-                pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, self.url, self.title, self.tag_list)
+                pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, self.url, self.title, self.tags)
             except:
                 pass # TODO: don't just silently quash a bad del.icio.us post
         if self.description:
@@ -242,9 +238,13 @@ class Link(models.Model):
                                                                 'day': self.pub_date.strftime('%d'),
                                                                 'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
-    
-    def allow_comments(self):
-        return self.enable_comments
 
-    def moderate_comments(self):
-        return datetime.datetime.today() - datetime.timedelta(settings.COMMENTS_MODERATE_AFTER) <= self.pub_date
+
+class Moderator(CommentModerator):
+    akismet = True
+    enable_field = 'enable_comments'
+    auto_moderate_field = 'pub_date'
+    moderate_after = 30
+    email_notification = True
+
+moderator.register([Entry, Link], Moderator)

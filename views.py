@@ -55,6 +55,14 @@ def entry_detail(request, year, month, day, slug):
                               pub_date__month=month,
                               pub_date__day=day,
                               slug__exact=slug)
+    try:
+        next_entry = entry.get_next()
+    except Entry.DoesNotExist:
+        next_entry = None
+    try:
+        previous_entry = entry.get_previous()
+    except:
+        previous_entry = None
     return render_to_response('coltrane/entry_detail.html',
                               { 'object': entry,
                                 'next_entry': entry.get_next(),
