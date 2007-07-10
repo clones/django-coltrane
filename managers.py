@@ -2,7 +2,7 @@ from comment_utils.managers import CommentedObjectManager
 from django.db import models
 
 
-class LiveEntryManager(CommentedObjectsManager):
+class LiveEntryManager(CommentedObjectManager):
     """
     Custom manager for the Entry model, providing shortcuts for
     filtering by entry status.

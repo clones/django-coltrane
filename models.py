@@ -24,8 +24,8 @@ class Category(models.Model):
     """
     title = models.CharField(maxlength=250)
     slug = models.SlugField(prepopulate_from=('title',), unique=True,
-                            help_text='Used in the URL for the category. Must be unique.')
-    description = models.TextField(help_text='A short description of the category, to be used in list pages.')
+                            help_text=u'Used in the URL for the category. Must be unique.')
+    description = models.TextField(help_text=u'A short description of the category, to be used in list pages.')
     description_html = models.TextField(editable=False, blank=True)
     
     class Meta:
@@ -35,7 +35,7 @@ class Category(models.Model):
     class Admin:
         pass
     
-    def __str__(self):
+    def __unicode__(self):
         return self.title
     
     def save(self):
@@ -83,12 +83,12 @@ class Entry(models.Model):
     author = models.ForeignKey(User)
     enable_comments = models.BooleanField(default=True)
     featured = models.BooleanField(default=False)
-    pub_date = models.DateTimeField('Date posted', default=datetime.datetime.today)
+    pub_date = models.DateTimeField(u'Date posted', default=datetime.datetime.today)
     slug = models.SlugField(prepopulate_from=('title',),
                             unique_for_date='pub_date',
-                            help_text='Used in the URL of the entry. Must be unique for the publication date of the entry.')
+                            help_text=u'Used in the URL of the entry. Must be unique for the publication date of the entry.')
     status = models.IntegerField(choices=STATUS_CHOICES, default=1,
-                                 help_text='Only entries with "live" status will be displayed publicly.')
+                                 help_text=u'Only entries with "live" status will be displayed publicly.')
     title = models.CharField(maxlength=250)
     
     # The actual entry bits.
@@ -105,7 +105,6 @@ class Entry(models.Model):
     live = managers.LiveEntryManager()
     
     class Meta:
-        date_hierarcy = 'pub_date'
         get_latest_by = 'pub_date'
         ordering = ['-pub_date']
         verbose_name_plural = 'Entries'
@@ -124,9 +123,8 @@ class Entry(models.Model):
         list_filter = ('status',)
         search_fields = ('excerpt', 'body', 'title')
     
-    def __str__(self):
+    def __unicode__(self):
         return self.title
-    
     
     def save(self):
         if self.excerpt:
@@ -180,30 +178,29 @@ class Link(models.Model):
     """
     # Metadata.
     enable_comments = models.BooleanField(default=True)
-    post_elsewhere = models.BooleanField('Post to del.icio.us',
+    post_elsewhere = models.BooleanField(u'Post to del.icio.us',
                                          default=settings.DEFAULT_EXTERNAL_LINK_POST,
-                                         help_text='If checked, this link will be posted both to your weblog and to your del.icio.us account.')
+                                         help_text=u'If checked, this link will be posted both to your weblog and to your del.icio.us account.')
     posted_by = models.ForeignKey(User)
     pub_date = models.DateTimeField(default=datetime.datetime.today)
     slug = models.SlugField(prepopulate_from=('title',),
                             unique_for_date='pub_date',
-                            help_text='Must be unique for the publication date.')
+                            help_text=u'Must be unique for the publication date.')
     title = models.CharField(maxlength=250)
     
     # The actual link bits.
     description = models.TextField(blank=True, null=True)
     description_html = models.TextField(editable=False, blank=True, null=True)
-    via_name = models.CharField('Via', maxlength=250, blank=True, null=True,
-                                help_text='The name of the person whose site you spotted the link on. Optional.')
+    via_name = models.CharField(u'Via', maxlength=250, blank=True, null=True,
+                                help_text=u'The name of the person whose site you spotted the link on. Optional.')
     via_url = models.URLField('Via URL', verify_exists=False, blank=True, null=True,
-                              help_text='The URL of the site where you spotted the link. Optional.')
+                              help_text=u'The URL of the site where you spotted the link. Optional.')
     tags = TagField()
     url = models.URLField('URL', unique=True, verify_exists=False)
     
-    objects = CommentedObjectsManager()
+    objects = CommentedObjectManager()
     
     class Meta:
-        date_hierarchy = 'pub_date'
         get_latest_by = 'pub_date'
         ordering = ['-pub_date']
     
@@ -218,7 +215,7 @@ class Link(models.Model):
         list_display = ('title', 'enable_comments')
         search_fields = ('title', 'description')
     
-    def __str__(self):
+    def __unicode__(self):
         return self.title
     
     def save(self):
@@ -240,11 +237,11 @@ class Link(models.Model):
     get_absolute_url = models.permalink(get_absolute_url)
 
 
-class Moderator(CommentModerator):
+class Moderator(moderation.CommentModerator):
     akismet = True
     enable_field = 'enable_comments'
     auto_moderate_field = 'pub_date'
     moderate_after = 30
     email_notification = True
 
-moderator.register([Entry, Link], Moderator)
+moderation.moderator.register([Entry, Link], Moderator)
