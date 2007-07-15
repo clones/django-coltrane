@@ -7,7 +7,7 @@ Models for a weblog application.
 import datetime
 
 from comment_utils.managers import CommentedObjectManager
-from comment_utils import moderation
+from comment_utils.moderation import CommentModerator, moderator
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -101,6 +101,7 @@ class Entry(models.Model):
     categories = models.ManyToManyField(Category, filter_interface=models.HORIZONTAL, blank=True)
     tags = TagField()
     
+    # Managers.
     objects = models.Manager()
     live = managers.LiveEntryManager()
     
@@ -231,17 +232,17 @@ class Link(models.Model):
     
     def get_absolute_url(self):
         return ('coltrane_link_detail', (), { 'year': self.pub_date.strftime('%Y'),
-                                                                'month': self.pub_date.strftime('%b').lower(),
-                                                                'day': self.pub_date.strftime('%d'),
-                                                                'slug': self.slug })
+                                              'month': self.pub_date.strftime('%b').lower(),
+                                              'day': self.pub_date.strftime('%d'),
+                                              'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
 
 
-class Moderator(moderation.CommentModerator):
+class Moderator(CommentModerator):
     akismet = True
     enable_field = 'enable_comments'
     auto_moderate_field = 'pub_date'
     moderate_after = 30
     #email_notification = True
 
-moderation.moderator.register([Entry, Link], Moderator)
+moderator.register([Entry, Link], Moderator)
