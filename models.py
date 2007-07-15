@@ -242,6 +242,6 @@ class Moderator(moderation.CommentModerator):
     enable_field = 'enable_comments'
     auto_moderate_field = 'pub_date'
     moderate_after = 30
-    email_notification = True
+    #email_notification = True
 
 moderation.moderator.register([Entry, Link], Moderator)
