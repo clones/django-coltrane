@@ -16,6 +16,10 @@ entry_info_dict = {
 
 
 urlpatterns = patterns('',
+                       url(r'^$',
+                           date_based.archive_index,
+                           entry_info_dict,
+                           name='coltrane_entry_archive_index'),
                        url(r'^(?P<year>\d{4})/$',
                            date_based.archive_year,
                            entry_info_dict,
