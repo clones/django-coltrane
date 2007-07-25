@@ -11,6 +11,8 @@ from comment_utils.moderation import CommentModerator, moderator
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.comments import models as comment_models
 from tagging.fields import TagField
 from template_utils.markup import formatter
 
@@ -120,7 +122,7 @@ class Entry(models.Model):
             ('Categorization', { 'fields':
                                  ('tags', 'categories') }),
             )
-        list_display = ('title', 'pub_date', 'enable_comments')
+        list_display = ('title', 'pub_date', 'author', 'status', 'enable_comments', '_get_comment_count')
         list_filter = ('status',)
         search_fields = ('excerpt', 'body', 'title')
     
@@ -166,6 +168,12 @@ class Entry(models.Model):
         
         """
         return self._next_previous_helper('previous')
+
+    def _get_comment_count(self):
+        model = settings.USE_FREE_COMMENTS and comment_models.FreeComment or comment_models.Comment
+        ctype = ContentType.objects.get_for_model(self)
+        return model.objects.filter(content_type__pk=ctype.id, object_id__exact=self.id).count()
+    _get_comment_count.short_description = 'Number of comments'
 
 
 class Link(models.Model):
