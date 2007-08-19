@@ -1,6 +1,9 @@
+import datetime
+
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render_to_response
 from django.views.generic import date_based, list_detail
+
 from coltrane.models import Category
 
 
@@ -167,7 +170,7 @@ def category_archive_day(request, slug, year, month, **kwargs):
     * ``template_name`` will always be 'coltrane/category_archive_day.html'.
     
     Template::
-        coltrane/entry_archive_day.html
+        coltrane/category_archive_day.html
     
     """
     category = get_object_or_404(Category, slug__exact=slug)
@@ -180,3 +183,36 @@ def category_archive_day(request, slug, year, month, **kwargs):
                                  extra_context=extra_context,
                                  template_name='coltrane/category_archive_day.html',
                                  **kwarg_dict)
+
+def category_archive_today(request, slug, **kwargs):
+    """
+    View of entries published in a ``Category`` on the current date.
+    
+    This is a short wrapper around the generic
+    ``date_based.archive_day`` view (the generic
+    ``date_based.archive_today`` view is also a short wrapper around
+    ``date_based.archive_day``), so all context variables populated by
+    that view will be available here. One extra variable is added::
+    
+        object
+            The ``Category``.
+    
+    Additionally, any keyword arguments which are valid for
+    ``date_based.archive_day`` will be accepted and passed to it, with
+    these exceptions:
+    
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``date_field`` will always be 'pub_date'.
+    * ``template_name`` will always be 'coltrane/category_archive_day.html'.
+    
+    Template::
+        coltrane/category_archive_day.html
+    
+    """
+    today = datetime.datetime.today()
+    return category_archive_day(request,
+                                year = str(today.year),
+                                month = today.strftime('%b').lower(),
+                                day = today.strftime('%d'),
+                                **kwargs)
