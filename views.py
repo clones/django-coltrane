@@ -77,6 +77,7 @@ def category_archive_index(request, slug, **kwargs):
     kwarg_dict = _category_kwarg_helper(category, kwargs)
     return date_based.archive_index(request,
                                     queryset=category.live_entry_set,
+                                    date_field='pub_date',
                                     template_name='coltrane/category_archive.html',
                                     **kwarg_dict)
 
@@ -180,6 +181,7 @@ def category_archive_day(request, slug, year, month, **kwargs):
                                  month=month,
                                  day=day,
                                  queryset=category.live_entry_set,
+                                 date_field='pub_date',
                                  extra_context=extra_context,
                                  template_name='coltrane/category_archive_day.html',
                                  **kwarg_dict)
