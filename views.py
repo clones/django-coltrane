@@ -109,6 +109,7 @@ def category_archive_year(request, slug, year, **kwargs):
     category = get_object_or_404(Category, slug__exact=slug)
     kwarg_dict = _category_kwarg_helper(category, kwargs)
     return date_based.archive_year(request,
+                                   year=year,
                                    queryset=category.live_entry_set,
                                    date_field='pub_date',
                                    template_name='coltrane/category_archive_year.html',
