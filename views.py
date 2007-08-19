@@ -183,7 +183,6 @@ def category_archive_day(request, slug, year, month, day, **kwargs):
                                  day=day,
                                  queryset=category.live_entry_set,
                                  date_field='pub_date',
-                                 extra_context=extra_context,
                                  template_name='coltrane/category_archive_day.html',
                                  **kwarg_dict)
 
