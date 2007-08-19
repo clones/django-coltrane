@@ -11,7 +11,7 @@ def _category_kwarg_helper(category, kwarg_dict):
     if 'extra_context' in kwarg_dict:
         kwarg_dict.update(object=category)
     else:
-        kwarg_dict['extra_context'] = category
+        kwarg_dict['extra_context'] = { 'object': category }
     for key in ('queryset', 'date_field', 'template_name'):
         if key in kwarg_dict:
             del kwarg_dict[key]
