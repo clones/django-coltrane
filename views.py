@@ -1,15 +1,22 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext
 from django.views.generic import date_based, list_detail
-from tagging.models import Tag
-from coltrane.models import Category, Entry, Link
+from coltrane.models import Category
 
-paginate_by = (hasattr(settings, 'PAGINATE_BY') and settings.PAGINATE_BY) or 20
 
-def category_detail(request, slug):
+def _category_kwarg_helper(category, kwarg_dict):
+    if 'extra_context' in kwarg_dict:
+        kwarg_dict.update(object=category)
+    else:
+        kwarg_dict['extra_context'] = category
+    for key in ('queryset', 'date_field', 'template_name'):
+        if key in kwarg_dict:
+            del kwarg_dict[key]
+    return kwarg_dict
+
+def category_detail(request, slug, **kwargs):
     """
-    Detail view of a Category, listing Entries posted in it.
+    Detail view of a ``Category``, listing entries published in it.
     
     This is a short wrapper around the generic
     ``list_detail.object_list`` view, so all context variables
@@ -17,55 +24,159 @@ def category_detail(request, slug):
     is added::
     
         object
-            The Category.
+            The ``Category``.
+
+    Additionally, any keyword arguments which are valid for
+    ``list_detail.object_list`` will be accepted and passed to it,
+    with these exceptions:
+
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``template_name`` will always be 'coltrane/category_detail.html'.
     
     Template::
         coltrane/category_detail.html
     
     """
     category = get_object_or_404(Category, slug__exact=slug)
+    kwarg_dict = _category_kwarg_helper(category, kwargs)
     return list_detail.object_list(request,
                                    queryset=category.live_entry_set,
-                                   extra_context={ 'object': category },
                                    template_name='coltrane/category_detail.html',
-                                   paginate_by=paginate_by,
-                                   allow_empty=True)
+                                   **kwarg_dict)
 
-def entry_detail(request, year, month, day, slug):
+def category_archive_index(request, slug, **kwargs):
     """
-    Detail view of an Entry.
+    View of the latest entries published in a ``Category``.
     
-    Context::
+    This is a short wrapper around the generic
+    ``date_based.archive_index`` view, so all context variables
+    populated by that view will be available here. One extra variable
+    is added::
     
         object
-            The Entry.
-            
-        next_entry
-            The next live Entry by ``pub_date``, if there is one.
+            The ``Category``.
     
-        previous_entry
-            The previous live Entry by ``pub_date``, if there is one.
+    Additionally, any keyword arguments which are valid for
+    ``date_based.archive_year`` will be accepted and passed to it,
+    with these exceptions:
+    
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``date_field`` will always be 'pub_date'.
+    * ``template_name`` will always be 'coltrane/category_archive.html'.
     
     Template::
-        coltrane/entry_detail.html
+        coltrane/category_archive.html
     
     """
-    entry = get_object_or_404(Entry,
-                              pub_date__year=year,
-                              pub_date__month=month,
-                              pub_date__day=day,
-                              slug__exact=slug)
-    try:
-        next_entry = entry.get_next()
-    except Entry.DoesNotExist:
-        next_entry = None
-    try:
-        previous_entry = entry.get_previous()
-    except:
-        previous_entry = None
-    return render_to_response('coltrane/entry_detail.html',
-                              { 'object': entry,
-                                'next_entry': entry.get_next(),
-                                'previous_entry': entry.get_previous() },
-                              context_instance=RequestContext(request))
+    category = get_object_or_404(Category, slug__exact=slug)
+    kwarg_dict = _category_kwarg_helper(category, kwargs)
+    return date_based.archive_index(request,
+                                    queryset=category.live_entry_set,
+                                    template_name='coltrane/category_archive.html',
+                                    **kwarg_dict)
 
+def category_archive_year(request, slug, year, **kwargs):
+    """
+    View of entries published in a ``Category`` in a given year.
+    
+    This is a short wrapper around the generic
+    ``date_based.archive_year`` view, so all context variables
+    populated by that view will be available here. One extra variable
+    is added::
+    
+        object
+            The ``Category``.
+    
+    Additionally, any keyword arguments which are valid for
+    ``date_based.archive_year`` will be accepted and passed to it,
+    with these exceptions:
+    
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``date_field`` will always be 'pub_date'.
+    * ``template_name`` will always be 'coltrane/category_archive_year.html'.
+    
+    Template::
+        coltrane/category_archive_year.html
+    
+    """
+    category = get_object_or_404(Category, slug__exact=slug)
+    kwarg_dict = _category_kwarg_helper(category, kwargs)
+    return date_based.archive_year(request,
+                                   queryset=category.live_entry_set,
+                                   date_field='pub_date',
+                                   template_name='coltrane/category_archive_year.html',
+                                   **kwarg_dict)
+
+def category_archive_month(request, slug, year, month, **kwargs):
+    """
+    View of entries published in a ``Category`` in a given month.
+    
+    This is a short wrapper around the generic
+    ``date_baed.archive_month`` view, so all context variables
+    populated by that view will be available here. One extra variable
+    is added::
+    
+        object
+            The ``Category``.
+    
+    Additionally, any keyword arguments which are valid for
+    ``date_based.archive_month`` will be accepted and passed to it,
+    with these exceptions:
+    
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``date_field`` will always be 'pub_date'.
+    * ``template_name`` will always be 'coltrane/category_archive_month.html'.
+    
+    Template::
+        coltrane/category_archive_month.html
+    
+    """
+    category = get_object_or_404(Category, slug__exact=slug)
+    kwarg_dict = _category_kwarg_helper(category, kwargs)
+    return date_based.archive_month(request,
+                                    year=year,
+                                    month=month
+                                    queryset=category.live_entry_set,
+                                    date_field='pub_date',
+                                    template_name='coltrane/category_archive_month.html',
+                                    **kwarg_dict)
+
+def category_archive_day(request, slug, year, month, **kwargs):
+    """
+    View of entries published in a ``Category`` on a given day.
+    
+    This is a short wrapper around the generic
+    ``date_based.archive_day`` view, so all context variables
+    populated by that view will be available here. One extra variable
+    is added::
+    
+        object
+            The ``Category``.
+    
+    Additionally, any keyword arguments which are valid for
+    ``date_based.archive_day`` will be accepted and passed to it, with
+    these exceptions:
+    
+    * ``queryset`` will always be the ``QuerySet`` of live entries in
+      the ``Category``.
+    * ``date_field`` will always be 'pub_date'.
+    * ``template_name`` will always be 'coltrane/category_archive_day.html'.
+    
+    Template::
+        coltrane/entry_archive_day.html
+    
+    """
+    category = get_object_or_404(Category, slug__exact=slug)
+    kwarg_dict = _category_kwarg_helper(category, kwargs)
+    return date_base.archive_day(request,
+                                 year=year,
+                                 month=month,
+                                 day=day,
+                                 queryset=category.live_entry_set,
+                                 extra_context=extra_context,
+                                 template_name='coltrane/category_archive_day.html',
+                                 **kwarg_dict)
