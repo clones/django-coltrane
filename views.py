@@ -177,7 +177,7 @@ def category_archive_day(request, slug, year, month, **kwargs):
     """
     category = get_object_or_404(Category, slug__exact=slug)
     kwarg_dict = _category_kwarg_helper(category, kwargs)
-    return date_base.archive_day(request,
+    return date_based.archive_day(request,
                                  year=year,
                                  month=month,
                                  day=day,
