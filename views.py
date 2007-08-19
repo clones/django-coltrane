@@ -150,7 +150,7 @@ def category_archive_month(request, slug, year, month, **kwargs):
                                     template_name='coltrane/category_archive_month.html',
                                     **kwarg_dict)
 
-def category_archive_day(request, slug, year, month, **kwargs):
+def category_archive_day(request, slug, year, month, day, **kwargs):
     """
     View of entries published in a ``Category`` on a given day.
     
