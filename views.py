@@ -142,7 +142,7 @@ def category_archive_month(request, slug, year, month, **kwargs):
     kwarg_dict = _category_kwarg_helper(category, kwargs)
     return date_based.archive_month(request,
                                     year=year,
-                                    month=month
+                                    month=month,
                                     queryset=category.live_entry_set,
                                     date_field='pub_date',
                                     template_name='coltrane/category_archive_month.html',
