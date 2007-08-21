@@ -13,6 +13,7 @@ class LatestFeaturedNode(GenericContentNode):
     def _get_query_set(self):
         if self._queryset is not None:
             self._queryset = self._queryset.filter(featured__exact=True)
+        return self._queryset
 
 
 def do_featured_entries(parser, token):
