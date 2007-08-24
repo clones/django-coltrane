@@ -123,7 +123,7 @@ class Entry(models.Model):
                                  ('tags', 'categories') }),
             )
         list_display = ('title', 'pub_date', 'author', 'status', 'enable_comments', '_get_comment_count')
-        list_filter = ('status',)
+        list_filter = ('status', 'categories')
         search_fields = ('excerpt', 'body', 'title')
     
     def __unicode__(self):
