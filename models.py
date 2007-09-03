@@ -10,6 +10,7 @@ from comment_utils.managers import CommentedObjectManager
 from comment_utils.moderation import CommentModerator, moderator
 from django.conf import settings
 from django.db import models
+from django.utils.encoding import smart_str
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.comments import models as comment_models
@@ -231,7 +232,7 @@ class Link(models.Model):
         if not self.id and self.post_elsewhere:
             import pydelicious
 #            try:
-            pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, self.url, self.title, self.tags)
+            pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, smart_str(self.url), mart_str(self.title), mart_str(self.tags))
 #            except:
 #                pass # TODO: don't just silently quash a bad del.icio.us post
         if self.description:
