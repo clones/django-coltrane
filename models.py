@@ -248,5 +248,9 @@ class Link(models.Model):
 
 class ColtraneModerator(CommentModerator):
     akismet = True
+    auto_moderate_field = 'pub_date'
+    email_notification = True
+    enable_field = 'enable_comments'
+    moderate_after = 30
 
 moderator.register([Entry, Link], ColtraneModerator)
