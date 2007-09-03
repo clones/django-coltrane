@@ -252,6 +252,6 @@ class ColtraneModerator(CommentModerator):
     auto_moderate_field = 'pub_date'
     email_notification = True
     enable_field = 'enable_comments'
-    moderate_after = 30
+    moderate_after = settings.COMMENTS_MODERATE_AFTER
 
 moderator.register([Entry, Link], ColtraneModerator)
