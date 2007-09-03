@@ -7,6 +7,7 @@ Models for a weblog application.
 import datetime
 
 from comment_utils.managers import CommentedObjectManager
+from comment_utils.moderation import CommentModerator, moderator
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -243,3 +244,9 @@ class Link(models.Model):
                                               'day': self.pub_date.strftime('%d'),
                                               'slug': self.slug })
     get_absolute_url = models.permalink(get_absolute_url)
+
+
+class ColtraneModerator(CommentModerator):
+    akismet = True
+
+moderator.register([Entry, Link], ColtraneModerator)
