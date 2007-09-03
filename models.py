@@ -231,10 +231,10 @@ class Link(models.Model):
     def save(self):
         if not self.id and self.post_elsewhere:
             import pydelicious
-#            try:
-            pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, smart_str(self.url), smart_str(self.title), smart_str(self.tags))
-#            except:
-#                pass # TODO: don't just silently quash a bad del.icio.us post
+            try:
+                pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, smart_str(self.url), smart_str(self.title), smart_str(self.tags))
+            except:
+                pass # TODO: don't just silently quash a bad del.icio.us post
         if self.description:
             self.description_html = formatter(self.description)
         super(Link, self).save()
