@@ -232,7 +232,7 @@ class Link(models.Model):
         if not self.id and self.post_elsewhere:
             import pydelicious
 #            try:
-            pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, smart_str(self.url), mart_str(self.title), mart_str(self.tags))
+            pydelicious.add(settings.DELICIOUS_USER, settings.DELICIOUS_PASSWORD, smart_str(self.url), smart_str(self.title), smart_str(self.tags))
 #            except:
 #                pass # TODO: don't just silently quash a bad del.icio.us post
         if self.description:
