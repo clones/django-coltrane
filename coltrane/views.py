@@ -9,7 +9,7 @@ from coltrane.models import Category
 
 def _category_kwarg_helper(category, kwarg_dict):
     if 'extra_context' in kwarg_dict:
-        kwarg_dict.update(object=category)
+        kwarg_dict['extra_context'].update(object=category)
     else:
         kwarg_dict['extra_context'] = { 'object': category }
     for key in ('queryset', 'date_field', 'template_name'):
