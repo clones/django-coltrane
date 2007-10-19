@@ -147,7 +147,7 @@ class Entry(models.Model):
     get_absolute_url = models.permalink(get_absolute_url)
     
     def _next_previous_helper(self, direction):
-        return getattr(self, 'get_%s_by_pub_date' % direction)(status__exact=1)
+        return getattr(self, 'get_%s_by_pub_date' % direction)(status__exact=self.LIVE_STATUS)
     
     def get_next(self):
         """
