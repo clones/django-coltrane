@@ -93,7 +93,7 @@ class Entry(models.Model):
     slug = models.SlugField(prepopulate_from=('title',),
                             unique_for_date='pub_date',
                             help_text=u'Used in the URL of the entry. Must be unique for the publication date of the entry.')
-    status = models.IntegerField(choices=STATUS_CHOICES, default=1,
+    status = models.IntegerField(choices=STATUS_CHOICES, default=LIVE_STATUS,
                                  help_text=u'Only entries with "live" status will be displayed publicly.')
     title = models.CharField(maxlength=250)
     
