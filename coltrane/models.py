@@ -56,7 +56,8 @@ class Category(models.Model):
         Access this through the property ``live_entry_set``.
         
         """
-        return self.entry_set.filter(status__exact=1)
+        from coltrane.models import Entry
+        return self.entry_set.filter(status__exact=Entry.LIVE_STATUS)
     
     live_entry_set = property(_get_live_entries)
 
