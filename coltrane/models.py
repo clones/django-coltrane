@@ -155,9 +155,9 @@ class Entry(models.Model):
         Returns the next Entry with "live" status by ``pub_date``, if
         there is one, or ``None`` if there isn't.
         
-        In public-facing views and templates, use this method instead
-        of ``get_next_by_pub_date``, because ``get_next_by_pub_date``
-        cannot differentiate live Entries.
+        In public-facing templates, use this method instead of
+        ``get_next_by_pub_date``, because ``get_next_by_pub_date``
+        does not differentiate entry status.
         
         """
         return self._next_previous_helper('next')
@@ -167,9 +167,10 @@ class Entry(models.Model):
         Returns the previous Entry with "live" status by ``pub_date``,
         if there is one, or ``None`` if there isn't.
         
-        In public-facing views and templates, use this method instead
-        of ``get_previous_by_pub_date``, because
-        ``get_previous_by_pub_date`` cannot differentiate live Entries.
+        In public-facing templates, use this method instead of
+        ``get_previous_by_pub_date``, because
+        ``get_previous_by_pub_date`` does not differentiate entry
+        status..
         
         """
         return self._next_previous_helper('previous')
