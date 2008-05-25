@@ -25,7 +25,7 @@ class Category(models.Model):
     A category that an Entry can belong to.
     
     """
-    title = models.CharField(maxlength=250)
+    title = models.CharField(max_length=250)
     slug = models.SlugField(prepopulate_from=('title',), unique=True,
                             help_text=u'Used in the URL for the category. Must be unique.')
     description = models.TextField(help_text=u'A short description of the category, to be used in list pages.')
@@ -96,7 +96,7 @@ class Entry(models.Model):
                             help_text=u'Used in the URL of the entry. Must be unique for the publication date of the entry.')
     status = models.IntegerField(choices=STATUS_CHOICES, default=LIVE_STATUS,
                                  help_text=u'Only entries with "live" status will be displayed publicly.')
-    title = models.CharField(maxlength=250)
+    title = models.CharField(max_length=250)
     
     # The actual entry bits.
     body = models.TextField()
@@ -109,8 +109,8 @@ class Entry(models.Model):
     tags = TagField()
     
     # Managers.
-    objects = models.Manager()
     live = managers.LiveEntryManager()
+    objects = models.Manager()
     
     class Meta:
         get_latest_by = 'pub_date'
@@ -201,12 +201,12 @@ class Link(models.Model):
     slug = models.SlugField(prepopulate_from=('title',),
                             unique_for_date='pub_date',
                             help_text=u'Must be unique for the publication date.')
-    title = models.CharField(maxlength=250)
+    title = models.CharField(max_length=250)
     
     # The actual link bits.
     description = models.TextField(blank=True, null=True)
     description_html = models.TextField(editable=False, blank=True, null=True)
-    via_name = models.CharField(u'Via', maxlength=250, blank=True, null=True,
+    via_name = models.CharField(u'Via', max_length=250, blank=True, null=True,
                                 help_text=u'The name of the person whose site you spotted the link on. Optional.')
     via_url = models.URLField('Via URL', verify_exists=False, blank=True, null=True,
                               help_text=u'The URL of the site where you spotted the link. Optional.')
