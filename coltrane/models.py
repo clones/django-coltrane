@@ -14,6 +14,7 @@ from django.utils.encoding import smart_str
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.comments import models as comment_models
+import tagging
 from tagging.fields import TagField
 from template_utils.markup import formatter
 
@@ -254,9 +255,12 @@ class Link(models.Model):
 
 class ColtraneModerator(CommentModerator):
     akismet = True
-    auto_moderate_field = 'pub_date'
+    auto_close_field = 'pub_date'
     email_notification = True
     enable_field = 'enable_comments'
-    moderate_after = settings.COMMENTS_MODERATE_AFTER
+    close_after = settings.COMMENTS_MODERATE_AFTER
 
 moderator.register([Entry, Link], ColtraneModerator)
+
+tagging.register(Entry, 'tag_set')
+tagging.register(Link, 'tag_set')
