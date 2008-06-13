@@ -8,6 +8,7 @@ from django.views.generic import date_based
 from django.views.generic import list_detail
 
 from tagging.models import Tag
+from tagging.views import tagged_object_list
 
 from coltrane.models import Link
 
